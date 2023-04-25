@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour
 
     }
 
+    // Movement Animation
     void AnimateMovement(Vector3 direction)
     {
         if(animator != null)
