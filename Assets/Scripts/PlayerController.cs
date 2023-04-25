@@ -4,22 +4,50 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    // Variables
     public float speed;
+    public Animator animator;
+    private Rigidbody2D myRigidbody;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        // Get Rigidbody
+        myRigidbody = GetComponent<Rigidbody2D>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Player Inputs
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
+        // Player Movements
         Vector3 direction = new Vector3(horizontal, vertical);
-
         transform.position += direction * speed * Time.deltaTime;
+
+        // Player Animations
+        AnimateMovement(direction);
+
+
+    }
+
+    void AnimateMovement(Vector3 direction)
+    {
+        if(animator != null)
+        {
+            if(direction.magnitude > 0)
+            {
+                animator.SetBool("isMoving", true);
+
+                animator.SetFloat("horizontal", direction.x);
+                animator.SetFloat("vertical", direction.y);
+            }
+            else
+            {
+                animator.SetBool("isMoving", false);
+            }
+        }
     }
 }
