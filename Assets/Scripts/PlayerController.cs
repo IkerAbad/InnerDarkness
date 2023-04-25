@@ -5,9 +5,10 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     // Variables
-    public float speed;
+    public float speed = 4f;
     public Animator animator;
     private Rigidbody2D myRigidbody;
+    private Vector3 direction;
 
     // Start is called before the first frame update
     void Start()
@@ -23,14 +24,18 @@ public class PlayerController : MonoBehaviour
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
-        // Player Movements
-        Vector3 direction = new Vector3(horizontal, vertical);
-        transform.position += direction * speed * Time.deltaTime;
+        // Player direction in a 2d plane
+        direction = new Vector3(horizontal, vertical, 0);
 
         // Player Animations
         AnimateMovement(direction);
+    }
 
-
+    //
+    void FixedUpdate()
+    {
+        // Player Movement
+        transform.position += direction * speed * Time.deltaTime;
     }
 
     // Movement Animation
