@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         // Player Movement
-        transform.position += direction * speed * Time.deltaTime;
+        transform.position += direction.normalized * speed * Time.deltaTime;
     }
 
     // Movement Animation
