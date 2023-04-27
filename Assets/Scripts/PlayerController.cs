@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public Animator animator;
     private Rigidbody2D myRigidbody;
     private Vector3 direction;
+    public bool playerIsArmed = false;
 
     // Start is called before the first frame update
     void Start()
