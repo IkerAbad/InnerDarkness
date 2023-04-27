@@ -64062,7 +64062,7 @@ GameObject:
   - component: {fileID: 315457307}
   - component: {fileID: 315457306}
   m_Layer: 0
-  m_Name: Collectable
+  m_Name: Weapon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
