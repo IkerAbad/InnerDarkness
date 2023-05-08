@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
 
         // Player Animations
         AnimateMovement(direction);
+
     }
 
     //

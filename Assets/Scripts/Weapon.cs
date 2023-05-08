@@ -39,5 +39,6 @@ public class Weapon : MonoBehaviour
         transform.SetParent(null);
         transform.position = new Vector3(transform.position.x, transform.position.y, 2);
     }
-}
+} //I LOVE NUTRIAS
+
 
