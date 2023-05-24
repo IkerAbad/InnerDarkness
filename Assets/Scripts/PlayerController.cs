@@ -7,18 +7,22 @@ public class PlayerController : MonoBehaviour
     // Variables
     public float speed = 4f;
     public Animator animator;
-    private Rigidbody2D myRigidbody;
-    private AudioSource playerAudio;
-    private Vector3 direction;
+    public AudioClip playerAudio;
     public bool playerIsArmed = false;
+    public float soundSpeed = 3.5f;
+
+    private Rigidbody2D myRigidbody;
+    private Vector3 direction;
+    private AudioSource audioSource;
+
 
     // Start is called before the first frame update
     void Start()
     {
         // Get Rigidbody
         myRigidbody = GetComponent<Rigidbody2D>();
-        // Get Audio
-        playerAudio = GetComponent<AudioSource>();
+        audioSource = GetComponent<AudioSource>();
+        audioSource.pitch = soundSpeed;
     }
 
     // Update is called once per frame
@@ -40,7 +44,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         // Player Movement
-        transform.position += direction.normalized * speed * Time.deltaTime;
+        transform.position += speed * Time.deltaTime * direction.normalized;
     }
 
     // Movement Animation
@@ -54,11 +58,30 @@ public class PlayerController : MonoBehaviour
 
                 animator.SetFloat("horizontal", direction.x);
                 animator.SetFloat("vertical", direction.y);
+
+                WalkSound();
             }
             else
             {
                 animator.SetBool("isMoving", false);
             }
         }
+    }
+
+    private bool isPlaySound = false;
+    private void WalkSound()
+    {
+        if (playerAudio != null && !isPlaySound)
+        {
+            StartCoroutine(PlaySound());
+        }
+    }
+
+    IEnumerator PlaySound()
+    {
+        AudioSource.PlayClipAtPoint(playerAudio, transform.position, 1);
+        isPlaySound = true;
+        yield return new WaitForSeconds(playerAudio.length / audioSource.pitch);
+        isPlaySound = false;
     }
 }
