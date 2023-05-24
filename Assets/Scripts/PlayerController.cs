@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     public float speed = 4f;
     public Animator animator;
     private Rigidbody2D myRigidbody;
+    private AudioSource playerAudio;
     private Vector3 direction;
     public bool playerIsArmed = false;
 
@@ -16,6 +17,8 @@ public class PlayerController : MonoBehaviour
     {
         // Get Rigidbody
         myRigidbody = GetComponent<Rigidbody2D>();
+        // Get Audio
+        playerAudio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
