@@ -5,46 +5,52 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     // Variables
-    public float speed = 4f;
+    public float walkingSpeed = 4f;
     public Animator animator;
-    public AudioClip playerAudio;
-    public bool playerIsArmed = false;
-    public float soundSpeed = 3.5f;
+    public AudioClip playerWalkingAudio;
+    public float soundSpeedForWalking = 3.5f;
+    public bool isPlaySound = false;
 
-    private Rigidbody2D myRigidbody;
+    private Rigidbody2D playerRigidbody;
     private Vector3 direction;
     private AudioSource audioSource;
 
+    private float horizontal = 0;
+    private float vertical = 0;
 
     // Start is called before the first frame update
     void Start()
     {
         // Get Rigidbody
-        myRigidbody = GetComponent<Rigidbody2D>();
+        playerRigidbody = GetComponent<Rigidbody2D>();
+
+        // Get AudioSource
         audioSource = GetComponent<AudioSource>();
-        audioSource.pitch = soundSpeed;
+        audioSource.pitch = soundSpeedForWalking;
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Player Inputs
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
+        if (!PauseMenu.isPaused)
+        {
+            // Player Inputs
+            horizontal = Input.GetAxisRaw("Horizontal");
+            vertical = Input.GetAxisRaw("Vertical");
 
-        // Player direction in a 2d plane
-        direction = new Vector3(horizontal, vertical, 0);
+            // Player direction in a 2d plane
+            direction = new Vector3(horizontal, vertical, 0);
 
-        // Player Animations
-        AnimateMovement(direction);
-
+            // Player Animations
+            AnimateMovement(direction);
+        }
     }
 
     //
     void FixedUpdate()
     {
         // Player Movement
-        transform.position += speed * Time.deltaTime * direction.normalized;
+        transform.position += walkingSpeed * Time.deltaTime * direction.normalized;
     }
 
     // Movement Animation
@@ -52,10 +58,9 @@ public class PlayerController : MonoBehaviour
     {
         if(animator != null)
         {
-            if(direction.magnitude > 0)
+            if(horizontal != 0 || vertical !=0)
             {
                 animator.SetBool("isMoving", true);
-
                 animator.SetFloat("horizontal", direction.x);
                 animator.SetFloat("vertical", direction.y);
 
@@ -68,20 +73,21 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private bool isPlaySound = false;
+    // Function Walking Sound
     private void WalkSound()
     {
-        if (playerAudio != null && !isPlaySound)
+        if (playerWalkingAudio != null && !isPlaySound)
         {
             StartCoroutine(PlaySound());
         }
     }
 
+    // Coroutine -> Walking SoundTrack
     IEnumerator PlaySound()
     {
-        AudioSource.PlayClipAtPoint(playerAudio, transform.position, 1);
+        AudioSource.PlayClipAtPoint(playerWalkingAudio, transform.position, 1);
         isPlaySound = true;
-        yield return new WaitForSeconds(playerAudio.length / audioSource.pitch);
+        yield return new WaitForSeconds(playerWalkingAudio.length / audioSource.pitch);
         isPlaySound = false;
     }
 }
