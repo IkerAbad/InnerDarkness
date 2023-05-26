@@ -9,11 +9,6 @@ public class CountdownTimer : MonoBehaviour
     public float timeLimit = 300f;
     [SerializeField] TextMeshProUGUI countdownText;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
-
     void FixedUpdate()
     {
         if (timeLimit != 0)

@@ -27,6 +27,11 @@ public class PlayerController : MonoBehaviour
         // Get AudioSource
         audioSource = GetComponent<AudioSource>();
         audioSource.pitch = soundSpeedForWalking;
+        if(ConfigManager.instance != null)
+        {
+            audioSource.volume = ConfigManager.instance.sfxV;
+        }
+        
     }
 
     // Update is called once per frame
@@ -44,6 +49,8 @@ public class PlayerController : MonoBehaviour
             // Player Animations
             AnimateMovement(direction);
         }
+        else
+            Debug.Log("EnPausa");
     }
 
     //

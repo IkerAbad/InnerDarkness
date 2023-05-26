@@ -7,19 +7,16 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
     public UiManager ui;
-
-    public bool game = true;
-    public bool pause = false;
     private void Awake()
     {
         if (instance == null)
         {
             instance = this;
+            
+            DontDestroyOnLoad(this);
         }
         else
             Destroy(this);
-
-        DontDestroyOnLoad(this);
     }
     /*
     public void GameOver()
@@ -33,7 +30,11 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
    
-
+    public void MenuDestroy()
+    {
+        Debug.Log("Menu");
+        Destroy(this.gameObject);
+    }
     public UiManager GetUi()
     {
         return ui;
