@@ -6,7 +6,6 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-    public UiManager ui;
     private void Awake()
     {
         if (instance == null)
@@ -34,10 +33,6 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("Menu");
         Destroy(this.gameObject);
-    }
-    public UiManager GetUi()
-    {
-        return ui;
     }
 }
 

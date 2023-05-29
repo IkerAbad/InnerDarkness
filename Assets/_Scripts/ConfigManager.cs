@@ -5,10 +5,10 @@ using UnityEngine;
 public class ConfigManager : MonoBehaviour
 {
     public static ConfigManager instance;
-    public UiManager ui;
 
     public float soundV;
     public float sfxV;
+    
     private void Awake()
     {
         if (instance == null)

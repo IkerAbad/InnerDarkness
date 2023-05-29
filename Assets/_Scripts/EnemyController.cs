@@ -1,63 +1,69 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class EnemyController : MonoBehaviour
 {
-    public float walkingSpeed = 1f;
-    [SerializeField] public Transform[] enemyPath;
-    public int currentTargetIndex = 0;
+    // Private variables
     private bool isReversing = false;
+    private AudioSource walkingSound;
+    private FOV fov;
+    private int directionToChange = 0; //0 left, 1 right, 2 up, 3 down
+    private bool followingPlayer = false;
+    [SerializeField] private AudioClip[] shootingAudios;
+    [SerializeField] private GameObject shootingPrefab;
+    [SerializeField] private Transform player;
 
+    // Public variables
+    public float walkingSpeed = 1f;
+    public Transform[] enemyPath;
+    public int currentTargetIndex = 0;
+    public bool alreadySeen = false;
+    public bool allowToshoot = false;
+
+    // Shooting Variables
+    private float nextFire = 0f;
+    public GameObject projectilePrefab;
+    public float projectileSpeed = 3.5f;
+    public float fireRate = 1f;
+
+    // Sprites
     public SpriteRenderer spriteRenderer;
 
+    // Moving Sprites
     public Sprite[] directionSpritesUp;
     public Sprite[] directionSpritesDown;
     public Sprite[] directionSpritesLeft;
     public Sprite[] directionSpritesRight;
     
-    [Space]
-    [Space]
-    [Space]
-    
+    // Shooting Sprites
     public Sprite[] directionSpritesUpShoot;
     public Sprite[] directionSpritesDownShoot;
     public Sprite[] directionSpritesLeftShoot;
     public Sprite[] directionSpritesRightShoot;
 
-    public float spriteUpdateDelay = 0.2f; // Tiempo entre cambios de sprite
-    public float spriteUpdateTimer = 0f; // Temporizador para controlar los cambios de sprite
-    public int currentSpriteIndex = 0; // �ndice del sprite actual
+    public float spriteUpdateDelay = 0.2f; // Time between sprites
+    public float spriteUpdateTimer = 0f; // Timer for sprite changes
+    public int currentSpriteIndex = 0; // Current sprite index
+    public int currentSpriteIndexShoot = 0; // Current shooting sprite index
+    public int repeatCount = 2; // Number of times the first two animations are repeated
 
-    public int repeatCount = 2; // N�mero de veces que se repiten las primeras dos animaciones
-
-    // Variables para el disparo
-    public GameObject projectilePrefab;
-    public float projectileSpeed = 3.5f;
-    public float fireRate = 1f;
-    private float nextFire = 0f;
-
-    private AudioSource walkingSound;
-
-    [SerializeField] private AudioClip[] shootingAudios;
-    [SerializeField] private GameObject shootingPrefab;
-
-    private FOV fov;
-
-    private int directionToChange = 0; //0 <- 1 -> 2 arriba y 3 abajo
+   
     void Start()
     {
         fov = GetComponent<FOV>();
-
         walkingSound = GetComponent<AudioSource>();
-        
+
         if (enemyPath.Length > 0)
         {
             SetTarget(enemyPath[0]);
         }
     }
 
-    private void Shoot()
+    private bool Shoot()
     {
         GameObject x = Instantiate(shootingPrefab, this.transform);
 
@@ -73,24 +79,58 @@ public class EnemyController : MonoBehaviour
         
         fov.viewRadius = 8;
         fov.viewAngle = 150;
-        
-        Vector3 target = FindObjectOfType<PlayerController>().transform.position;  // Obtiene la posici�n del jugador
-        Vector3 direction = (target - transform.position);  // Calcula la direcci�n hacia el jugador
-        GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);  // Crea un proyectil
-        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
-        rb.velocity = direction * projectileSpeed;  // Lanza el proyectil en la direcci�n del jugador
 
-        Debug.Log("Shooting -> " + rb.velocity);
+        // Gets player position
+        Vector3 target = FindObjectOfType<PlayerController>().transform.position;
+        // Gets player direction
+        Vector3 direction = (target - transform.position);  
+
+        bool aux = false;
+        
+        // Raycast to player
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, fov.viewRadius, fov.obstacleMask);
+
+        if (hit.collider != null)
+        {
+            if (!hit.collider.CompareTag("Player"))
+            {
+                aux = true;
+            }
+        }
+        // Creates proyectile
+        GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);  
+        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
+        // Sends proyectile to players position
+        rb.velocity = direction * projectileSpeed;  
+        //Debug.Log("Shooting -> " + rb.velocity);
+
+        return aux;
     }
 
     void Update()
     {
+        if (Vector2.Distance(player.position,transform.position) < fov.viewRadius)
+        {
+            if (alreadySeen)
+            {
+                followingPlayer = true;
+                fov.target = player;
+                SetTarget(player);
+            }
+        }
+        else
+        {
+            // Out of range
+            followingPlayer = false;
+            alreadySeen = false;
+        }
+        
         if (!PauseMenu.isPaused && enemyPath[currentTargetIndex])
         {
             Transform currentTarget = enemyPath[currentTargetIndex];
             float step = walkingSpeed * Time.deltaTime;
 
-            if (fov.target == null) // solo se mueve si no hay un objetivo
+            if (fov.target == null) // moves if there is no target
             {
                 transform.position = Vector2.MoveTowards(transform.position, currentTarget.position, step);
             }
@@ -118,80 +158,109 @@ public class EnemyController : MonoBehaviour
                     }
                 }
 
-                SetTarget(enemyPath[currentTargetIndex]);
+                if (!followingPlayer)
+                {
+                    SetTarget(enemyPath[currentTargetIndex]);
+                }
+                else
+                {
+                    // Follows player
+                    fov.target = player;
+                }
             }
-
-            // Actualizar el temporizador para controlar los cambios de sprite
-            spriteUpdateTimer += Time.deltaTime;
-            if (spriteUpdateTimer >= spriteUpdateDelay)
-            {
-                spriteUpdateTimer = 0f; // Reiniciar el temporizador
-                UpdateSprite(); // Cambiar el sprite
-            }
-
-            // Add shooting logic here
+            
             if (fov.target != null)
             {
-                if (Time.time > nextFire/2)
+                if (Time.time > nextFire)
                 {
                     switch (this.directionToChange)
                     {
                     case 0:
-                        if (currentSpriteIndex < directionSpritesLeft.Length - repeatCount)
-                        {
-                            currentSpriteIndex++;
-                        }
-                        else
-                        {
-                            currentSpriteIndex = Random.Range(0, directionSpritesLeft.Length - repeatCount);
-                        }
-                        spriteRenderer.sprite = directionSpritesLeft[currentSpriteIndex]; // Move left
+                        currentSpriteIndexShoot = Random.Range(0, directionSpritesLeftShoot.Length);
+                        
+                        spriteRenderer.sprite = directionSpritesLeftShoot[currentSpriteIndexShoot]; // Move left
                         break;
                     case 1:
-                        if (currentSpriteIndex < directionSpritesRight.Length - repeatCount)
-                        {
-                            currentSpriteIndex++;
-                        }
-                        else
-                        {
-                            currentSpriteIndex = Random.Range(0, directionSpritesRight.Length - repeatCount);
-                        }
-                        spriteRenderer.sprite = directionSpritesRight[currentSpriteIndex]; // Move right
+                        currentSpriteIndexShoot = Random.Range(0, directionSpritesRightShoot.Length);
+                        
+                        spriteRenderer.sprite = directionSpritesRightShoot[currentSpriteIndexShoot]; // Move right
                         break;
                     case 2:
-                        if (currentSpriteIndex < directionSpritesUp.Length - repeatCount)
-                        {
-                            currentSpriteIndex++;
-                        }
-                        else
-                        {
-                            currentSpriteIndex = Random.Range(0, directionSpritesUp.Length - repeatCount);
-                        }
-                        spriteRenderer.sprite = directionSpritesUp[currentSpriteIndex]; // Move up
+                        currentSpriteIndexShoot = Random.Range(0, directionSpritesUpShoot.Length);
+                        
+                        spriteRenderer.sprite = directionSpritesUpShoot[currentSpriteIndexShoot]; // Move up
                         break;
                     case 3:
-                        if (currentSpriteIndex < directionSpritesDown.Length - repeatCount)
-                        {
-                            currentSpriteIndex++;
-                        }
-                        else
-                        {
-                            currentSpriteIndex = Random.Range(0, directionSpritesDown.Length - repeatCount);
-                        }
-                        spriteRenderer.sprite = directionSpritesDown[currentSpriteIndex]; // Move down
+                        currentSpriteIndexShoot = Random.Range(0, directionSpritesDownShoot.Length);
+                        
+                        spriteRenderer.sprite = directionSpritesDownShoot[currentSpriteIndexShoot]; // Move down
                         break;
                 }
                 }
 
+                bool x = false;
+                
                 if ( Time.time > nextFire)
                 {
-                    nextFire = Time.time + fireRate;
-                    Shoot();
+                    Vector3 direction = player.position - transform.position;
+
+                    if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y)) // If moving more in x direction
+                    {
+                        if (direction.x > 0)
+                        {
+                            directionToChange = 1; //Derecha
+                        }
+                        else
+                        {
+                            directionToChange = 0; //Izquierda
+                        }
+                    }
+                    else // If moving more in y direction
+                    {
+                        if (direction.y > 0)
+                        {
+                            directionToChange = 2; //Arriba
+                        }
+                        else
+                        {
+                            directionToChange = 3; //Abajo
+                        }
+                    }
+                    
+                    nextFire = Time.time + fireRate; 
+                    x = Shoot();
                 }
+                
+               
+                
+                /*if (x)
+                {
+                    int aux = 0;
+                    float distance = float.MaxValue;
+
+                    for (int i = 0; i < enemyPath.Length; i++)
+                    {
+                        if (Vector2.Distance(player.position,enemyPath[i].position) < distance)
+                        {
+                            distance = Vector2.Distance(player.position, enemyPath[i].position);
+                            aux = i;
+                        }
+                    }
+
+                    currentTargetIndex = aux;
+                }*/
             }
             else
             {
-                fov.viewRadius = 6;
+                // Update timer to track sprite changes
+                spriteUpdateTimer += Time.deltaTime;
+                if (spriteUpdateTimer >= spriteUpdateDelay)
+                {
+                    spriteUpdateTimer = 0f; // Reset timer
+                    UpdateSprite(); // Change sprite
+                }
+                
+                fov.viewRadius = 5f;
                 fov.viewAngle = 90;
             }
         }
@@ -199,13 +268,22 @@ public class EnemyController : MonoBehaviour
 
     private void UpdateSprite()
     {
-        Vector3 direction = enemyPath[currentTargetIndex].position - transform.position;
+        Vector3 direction = new Vector3();
+        
+        if (!followingPlayer)
+        {
+            direction  = enemyPath[currentTargetIndex].position - transform.position;
+        }
+        else
+        {
+            direction = player.position - transform.position;
+        }
 
         if (Mathf.Abs(direction.x) > Mathf.Abs(direction.y)) // If moving more in x direction
         {
             if (direction.x > 0)
             {
-                directionToChange = 1; //Derecha
+                directionToChange = 1; // Right
                 
                 if (currentSpriteIndex < directionSpritesRight.Length - repeatCount)
                 {
@@ -219,7 +297,7 @@ public class EnemyController : MonoBehaviour
             }
             else
             {
-                directionToChange = 0; //Izquierda
+                directionToChange = 0; // Left
                 
                 if (currentSpriteIndex < directionSpritesLeft.Length - repeatCount)
                 {
@@ -236,7 +314,7 @@ public class EnemyController : MonoBehaviour
         {
             if (direction.y > 0)
             {
-                directionToChange = 2; //Arriba
+                directionToChange = 2; // Up
                 
                 if (currentSpriteIndex < directionSpritesUp.Length - repeatCount)
                 {
@@ -250,7 +328,7 @@ public class EnemyController : MonoBehaviour
             }
             else
             {
-                directionToChange = 3; //Abajo
+                directionToChange = 3; //Down
                 
                 if (currentSpriteIndex < directionSpritesDown.Length - repeatCount)
                 {
@@ -300,6 +378,15 @@ public class EnemyController : MonoBehaviour
     public Transform GetNextWaypoint()
     {
         return enemyPath[currentTargetIndex];
+    }
+
+    // If enemy collides with player, Game Over
+    private void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.gameObject.CompareTag("Player"))
+        {
+            SceneManager.LoadScene(SceneManager.sceneCountInBuildSettings - 1);
+        }
     }
 }
 

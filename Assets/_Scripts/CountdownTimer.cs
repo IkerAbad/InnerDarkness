@@ -19,8 +19,8 @@ public class CountdownTimer : MonoBehaviour
         }
         else
         {
+            // Game Over
             timeLimit = 0;
-            
             SceneManager.LoadScene(SceneManager.sceneCountInBuildSettings-1);
         }
 
@@ -34,10 +34,12 @@ public class CountdownTimer : MonoBehaviour
             timeToDisplay = 0;
         }
 
+        // Date Formatter
         float minutes = Mathf.FloorToInt(timeToDisplay / 60);
         float seconds = Mathf.FloorToInt(timeToDisplay % 60);
         float centiseconds = timeToDisplay % 1 * 100;
 
+        // Display
         countdownText.text = "Time<br>" + string.Format("{00:00}:{01:00}:{02:00}", minutes, seconds, centiseconds);
     }
 }

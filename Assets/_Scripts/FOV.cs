@@ -4,33 +4,35 @@ using UnityEngine;
 
 public class FOV : MonoBehaviour
 {
+    // Public variables
     public float viewRadius;
     public float viewAngle;
     public LayerMask targetMask;
     public LayerMask obstacleMask;
     public int segments = 36;
+    public Transform target;
 
-    public Transform target;  // A�ade esta l�nea al inicio de tu script
-
+    // Private variables
+    private EnemyController enemyController;
     [SerializeField] private AudioSource findedPlayer;
     [SerializeField] private AudioSource backgroundMusic;
 
 
     private void Start()
     {
+        enemyController = GetComponent<EnemyController>();
         InvokeRepeating("FindVisibleTargets", 0, 0.2f);
     }
 
     void Update()
     {
-        // Detecci�n del objetivo
+        // Target detection
         target = FindVisibleTargets();
     }
 
     Transform FindVisibleTargets()
     {
         EnemyController enemyController = GetComponent<EnemyController>();
-        
         Transform nextWaypoint = enemyController.GetNextWaypoint();
 
         if (nextWaypoint != null)
@@ -44,6 +46,7 @@ public class FOV : MonoBehaviour
             {
                 float angle = startAngle + i * angleStep;
                 Vector3 dir = DirFromAngle(angle, true);
+                
                 RaycastHit2D hit = Physics2D.Raycast(transform.position, dir, viewRadius, obstacleMask);
 
                 if (hit.collider != null)
@@ -52,13 +55,15 @@ public class FOV : MonoBehaviour
                     {
                         backgroundMusic.Pause();
                         findedPlayer.Play();
+
+                        enemyController.alreadySeen = true;
                     }
 
-                    // Comprobar si el rayo ha golpeado un objetivo
+                    // Check if raycast has hit a target
                     if (((1 << hit.collider.gameObject.layer) & targetMask) != 0)
                     {
-                        //Debug.Log("Objetivo encontrado: " + hit.collider.gameObject.name);
-                        return hit.collider.transform; // Devolver el objetivo encontrado
+                        //Debug.Log("Target found: " + hit.collider.gameObject.name);
+                        return hit.collider.transform; // returns found target
                     }
                 }
             }

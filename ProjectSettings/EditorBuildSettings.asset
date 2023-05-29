@@ -6,6 +6,21 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/InnerDarkness.unity
+    path: Assets/Scenes/MainMenu.unity
+    guid: 4ff9a832c6cdfd74e8f00cb5be1e713b
+  - enabled: 1
+    path: Assets/Scenes/Level1.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 1
+    path: Assets/Scenes/Level2.unity
+    guid: e97a97542fa03034abfdcc53be57d695
+  - enabled: 1
+    path: Assets/Scenes/FinalLevel.unity
+    guid: 98b05d54bdb7e2446b24827222859e1c
+  - enabled: 1
+    path: Assets/Scenes/TheEndMenu.unity
+    guid: 9ab792bfe07528f4f9e461586cd3ce54
+  - enabled: 1
+    path: Assets/Scenes/GameOver.unity
+    guid: 8c488b3f117698f499a37392b6957837
   m_configObjects: {}
