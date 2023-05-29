@@ -51,7 +51,6 @@ public class EnemyController : MonoBehaviour
     public int currentSpriteIndexShoot = 0; // Current shooting sprite index
     public int repeatCount = 2; // Number of times the first two animations are repeated
 
-   
     void Start()
     {
         fov = GetComponent<FOV>();
@@ -60,6 +59,14 @@ public class EnemyController : MonoBehaviour
         if (enemyPath.Length > 0)
         {
             SetTarget(enemyPath[0]);
+        }
+        if (ConfigManager.instance != null)
+        {
+            walkingSound.volume = ConfigManager.instance.sfxV;
+        }
+        else
+        {
+            walkingSound.volume = 0.1f;
         }
     }
 

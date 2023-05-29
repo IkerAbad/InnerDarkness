@@ -20,7 +20,7 @@ public class SoundManager : MonoBehaviour
         }
         else
         {
-            audioSource.volume = 0.2f;
+            audioSource.volume = 0.1f;
         }
     }
 }

@@ -7,15 +7,14 @@ using UnityEngine.SceneManagement;
 public class Teleport : MonoBehaviour
 {
     [SerializeField] private Vector3 position;
-    [SerializeField] private int escena;
+    [SerializeField] private int scene;
     
     private void OnTriggerEnter2D(Collider2D col)
     {
+        // If player enters teleportation zone
         if (col.gameObject.CompareTag("Player"))
         {
-            //PlayerPrefs.SetInt("Nivel",escena);
-            //SceneManager.LoadScene(escena);
-            
+            // Teleport
             col.gameObject.transform.position = position;
         }
     }

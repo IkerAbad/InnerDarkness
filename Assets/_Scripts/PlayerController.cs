@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     public AudioClip playerWalkingAudio;
     public float soundSpeedForWalking = 3.5f;
     public bool isPlaySound = false;
+    public int health = 10;  // Players health
 
     private Rigidbody2D playerRigidbody;
     private Vector3 direction;
@@ -19,11 +20,8 @@ public class PlayerController : MonoBehaviour
     private float horizontal = 0;
     private float vertical = 0;
 
-    public int health = 10;  // La vida del jugador
-
     [SerializeField] private AudioSource audioHit;
 
-    // Start is called before the first frame update
     void Start()
     {
         // Get Rigidbody
@@ -39,7 +37,6 @@ public class PlayerController : MonoBehaviour
         
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (!PauseMenu.isPaused)
@@ -55,10 +52,11 @@ public class PlayerController : MonoBehaviour
             AnimateMovement(direction);
         }
         else
-            Debug.Log("Paused");
+        {
+            //Debug.Log("Paused");
+        }
     }
 
-    //
     void FixedUpdate()
     {
         // Player Movement
@@ -103,19 +101,22 @@ public class PlayerController : MonoBehaviour
         isPlaySound = false;
     }
 
+    // Player taking damage function
     public void TakeDamage(int damage)
     {
+        // Hit sound
         audioHit.Play();
-        
-        health -= damage;  // Reduce la vida del jugador
 
-        if (health <= 0)
+        // Hit damage
+        health -= damage;
+
+        // If players health is 0 or belows dies and Game Over
+        if (health <= 0) 
         {
             // Load "GameOver" scene
             //SceneManager.LoadScene("GameOver");
             
             SceneManager.LoadScene(SceneManager.sceneCountInBuildSettings-1);
-
             Debug.Log("Player died!");
         }
     }

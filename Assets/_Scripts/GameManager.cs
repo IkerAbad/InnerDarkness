@@ -17,13 +17,7 @@ public class GameManager : MonoBehaviour
         else
             Destroy(this);
     }
-    /*
-    public void GameOver()
-    {
-        restartButton.gameObject.SetActive(true);
-        gameOverText.gameObject.SetActive(true);
-    }
-     */
+
     public void RestartGame()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
@@ -31,7 +25,6 @@ public class GameManager : MonoBehaviour
    
     public void MenuDestroy()
     {
-        Debug.Log("Menu");
         Destroy(this.gameObject);
     }
 }

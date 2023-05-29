@@ -14,9 +14,8 @@ public class FOV : MonoBehaviour
 
     // Private variables
     private EnemyController enemyController;
-    [SerializeField] private AudioSource findedPlayer;
+    [SerializeField] private AudioSource foundPlayer;
     [SerializeField] private AudioSource backgroundMusic;
-
 
     private void Start()
     {
@@ -28,6 +27,21 @@ public class FOV : MonoBehaviour
     {
         // Target detection
         target = FindVisibleTargets();
+
+        // Music Config
+        if (ConfigManager.instance != null)
+        {
+            if(ConfigManager.instance.soundV != 0)
+            {
+                foundPlayer.volume = ConfigManager.instance.soundV + 0.3f;
+            }
+            backgroundMusic.volume = ConfigManager.instance.soundV;
+        }
+        else
+        {
+            foundPlayer.volume = 0.5f;
+            backgroundMusic.volume = 0.1f;
+        }
     }
 
     Transform FindVisibleTargets()
@@ -37,6 +51,7 @@ public class FOV : MonoBehaviour
 
         if (nextWaypoint != null)
         {
+
             Vector3 direction = (nextWaypoint.position - transform.position).normalized;
 
             float startAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - viewAngle / 2;
@@ -51,13 +66,14 @@ public class FOV : MonoBehaviour
 
                 if (hit.collider != null)
                 {
-                    if (!findedPlayer.isPlaying && hit.collider.CompareTag("Player"))
+                    if (!foundPlayer.isPlaying && hit.collider.CompareTag("Player"))
                     {
                         backgroundMusic.Pause();
-                        findedPlayer.Play();
+                        foundPlayer.Play();
 
                         enemyController.alreadySeen = true;
                     }
+
 
                     // Check if raycast has hit a target
                     if (((1 << hit.collider.gameObject.layer) & targetMask) != 0)
@@ -68,14 +84,25 @@ public class FOV : MonoBehaviour
                 }
             }
         }
-
-        if (!backgroundMusic.isPlaying)
+        /*
+        if (target)
         {
-            backgroundMusic.Play();
-            findedPlayer.Stop();
+            backgroundMusic.Pause();
+            foundPlayer.Play();
+        } 
+        */
+        if (!target)
+        {
+            foundPlayer.Stop();
+            if (!backgroundMusic.isPlaying)
+            {
+                backgroundMusic.Play();
+            }
+
         }
 
-        return null; // Devolver null si no se ha encontrado ning�n objetivo
+
+        return null; // Returns null if there is no target
     }
 
 
@@ -89,7 +116,7 @@ public class FOV : MonoBehaviour
         return new Vector3(Mathf.Cos(angleInDegrees * Mathf.Deg2Rad), Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0);
     }
 
-    // Para visualizar el campo de visi�n
+    // Display field of view
     void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
@@ -112,7 +139,7 @@ public class FOV : MonoBehaviour
             Gizmos.DrawLine(transform.position, transform.position + startDir * viewRadius);
             Gizmos.DrawLine(transform.position, transform.position + endDir * viewRadius);
 
-            // Dibujar el arco del campo de visi�n
+            // Draws the field of vision
             Gizmos.color = Color.green;
             float angleStep = viewAngle / segments;
             for (int i = 0; i <= segments; i++)
