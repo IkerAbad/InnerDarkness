@@ -7,12 +7,12 @@ using UnityEngine.SceneManagement;
 
 public class CountdownTimer : MonoBehaviour
 {
-    public float timeLimit = 300f;
+    public float timeLimit = 10f;
     [SerializeField] TextMeshProUGUI countdownText;
 
     void FixedUpdate()
     {
-        if (timeLimit != 0)
+        if (timeLimit > 0)
         {
             timeLimit -= Time.deltaTime;
             
